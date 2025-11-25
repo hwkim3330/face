@@ -1,0 +1,89 @@
+{
+  "name": "FacePlay - 스노우 스타일 앱",
+  "short_name": "FacePlay",
+  "description": "얼굴 인식 AR 필터, 음성 효과, 미니게임이 있는 스노우 스타일 앱",
+  "start_url": "/face/",
+  "scope": "/face/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1a2e",
+  "theme_color": "#ff6b6b",
+  "icons": [
+    {
+      "src": "icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["entertainment", "photo", "social"],
+  "screenshots": [
+    {
+      "src": "screenshots/screen1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "메인 카메라 화면"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "카메라",
+      "short_name": "카메라",
+      "description": "카메라 모드 열기",
+      "url": "/face/?mode=camera",
+      "icons": [{ "src": "icons/camera.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "게임",
+      "short_name": "게임",
+      "description": "게임 모드 열기",
+      "url": "/face/?mode=game",
+      "icons": [{ "src": "icons/game.png", "sizes": "96x96" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
