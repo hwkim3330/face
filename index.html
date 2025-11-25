@@ -2,962 +2,1002 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FacePlay - 스노우 스타일 얼굴 인식 앱</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Vision Lab - MediaPipe 기반 AI 비전 앱 모음</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
 
-    <!-- PWA Meta Tags -->
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#ff6b6b">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="FacePlay">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <meta name="theme-color" content="#6366f1">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="FacePlay - 스노우 스타일 얼굴 인식 앱">
-    <meta property="og:description" content="AR 필터, 음성 효과, 미니게임이 있는 재미있는 카메라 앱">
+    <meta property="og:title" content="AI Vision Lab - MediaPipe AI 비전 앱">
+    <meta property="og:description" content="얼굴, 손, 몸 인식 AI 앱 컬렉션. 브라우저에서 바로 실행!">
     <meta property="og:type" content="website">
 
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            --bg-dark: #0f0f23;
+            --bg-card: #1a1a2e;
+            --bg-card-hover: #252542;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --gradient-5: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
             overflow-x: hidden;
-            color: #fff;
         }
 
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            max-width: 500px;
-            margin: 0 auto;
-            position: relative;
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
         }
 
-        /* Header */
+        .bg-animation .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--primary);
+            top: -200px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: var(--secondary);
+            top: 50%;
+            right: -150px;
+            animation-delay: -5s;
+        }
+
+        .orb-3 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent);
+            bottom: -100px;
+            left: 30%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, 50px) scale(1.1); }
+            50% { transform: translate(0, 100px) scale(1); }
+            75% { transform: translate(-50px, 50px) scale(0.9); }
+        }
+
+        /* Header / Navigation */
         .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            background: rgba(15, 15, 35, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+
+        .header.scrolled {
+            padding: 0.75rem 2rem;
+            background: rgba(15, 15, 35, 0.95);
+        }
+
+        .nav {
+            max-width: 1400px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(10px);
-            z-index: 100;
         }
 
-        .header h1 {
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient-1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 1.5rem;
-            background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb);
+        }
+
+        .logo-text {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .header-icons {
+        .nav-links {
             display: flex;
-            gap: 15px;
+            gap: 2rem;
+            list-style: none;
         }
 
-        .icon-btn {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .icon-btn:hover {
-            background: rgba(255,255,255,0.2);
-            transform: scale(1.1);
-        }
-
-        /* Camera View */
-        .camera-container {
-            flex: 1;
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s;
             position: relative;
-            overflow: hidden;
-            background: #000;
         }
 
-        #video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
+        .nav-links a:hover {
+            color: var(--text);
         }
 
-        #canvas {
+        .nav-links a::after {
+            content: '';
             position: absolute;
-            top: 0;
+            bottom: -5px;
             left: 0;
-            width: 100%;
-            height: 100%;
-            transform: scaleX(-1);
-            pointer-events: none;
-        }
-
-        #overlay-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            transform: scaleX(-1);
-            pointer-events: none;
-        }
-
-        /* Loading Screen */
-        .loading-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 200;
-            transition: opacity 0.5s;
-        }
-
-        .loading-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-top-color: #ff6b6b;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .loading-text {
-            margin-top: 20px;
-            font-size: 1.1rem;
-            color: rgba(255,255,255,0.8);
-        }
-
-        .loading-progress {
-            margin-top: 15px;
-            width: 200px;
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .loading-progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #ff6b6b, #feca57);
-            width: 0%;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
             transition: width 0.3s;
         }
 
-        /* Face Info Display */
-        .face-info {
-            position: absolute;
-            top: 70px;
-            left: 20px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(10px);
-            padding: 12px 18px;
-            border-radius: 15px;
-            font-size: 0.9rem;
-            z-index: 50;
-            border: 1px solid rgba(255,255,255,0.1);
+        .nav-links a:hover::after {
+            width: 100%;
         }
 
-        .face-info-item {
+        .nav-cta {
+            padding: 10px 24px;
+            background: var(--gradient-1);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
             display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 5px 0;
-        }
-
-        /* Filter Selector */
-        .filter-bar {
-            position: absolute;
-            bottom: 100px;
-            left: 0;
-            right: 0;
-            padding: 15px;
-            overflow-x: auto;
-            display: flex;
-            gap: 12px;
-            scrollbar-width: none;
-            z-index: 50;
-        }
-
-        .filter-bar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .filter-item {
-            flex-shrink: 0;
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 3px solid transparent;
-        }
-
-        .filter-item.active {
-            border-color: #ff6b6b;
-            background: rgba(255,107,107,0.3);
-            transform: scale(1.1);
-        }
-
-        .filter-item:hover {
-            transform: scale(1.05);
-        }
-
-        .filter-item .emoji {
-            font-size: 1.8rem;
-        }
-
-        .filter-item .name {
-            font-size: 0.65rem;
-            margin-top: 3px;
-            color: rgba(255,255,255,0.8);
-        }
-
-        /* Bottom Controls */
-        .bottom-controls {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 20px;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(10px);
-        }
-
-        .capture-btn {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
-            border: 5px solid #fff;
-            cursor: pointer;
-            transition: all 0.2s;
+            padding: 120px 2rem 80px;
+            text-align: center;
             position: relative;
         }
 
-        .capture-btn:hover {
-            transform: scale(1.05);
+        .hero-content {
+            max-width: 900px;
         }
 
-        .capture-btn:active {
-            transform: scale(0.95);
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            margin-bottom: 2rem;
         }
 
-        .capture-btn.recording {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            animation: pulse 1s infinite;
+        .hero-badge .pulse {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(255,107,107,0.7); }
-            50% { box-shadow: 0 0 0 15px rgba(255,107,107,0); }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
         }
 
-        .control-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.15);
-            border: none;
-            color: #fff;
-            font-size: 1.3rem;
-            cursor: pointer;
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #fff 0%, #e2e8f0 50%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero h1 .highlight {
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
             transition: all 0.3s;
+            cursor: pointer;
+            border: none;
         }
 
-        .control-btn:hover {
-            background: rgba(255,255,255,0.25);
+        .btn-primary {
+            background: var(--gradient-1);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
         }
 
-        /* Mode Tabs */
-        .mode-tabs {
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.05);
+            color: var(--text);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* Tech Stack */
+        .tech-stack {
             display: flex;
             justify-content: center;
-            gap: 30px;
-            padding: 10px 0;
-            background: rgba(0,0,0,0.2);
+            gap: 3rem;
+            margin-top: 4rem;
+            flex-wrap: wrap;
         }
 
-        .mode-tab {
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.5);
-            font-size: 0.9rem;
-            cursor: pointer;
-            padding: 8px 16px;
-            border-radius: 20px;
-            transition: all 0.3s;
-        }
-
-        .mode-tab.active {
-            color: #fff;
-            background: rgba(255,255,255,0.15);
-        }
-
-        /* Gallery Modal */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 300;
-            display: none;
-            flex-direction: column;
-        }
-
-        .modal.show {
+        .tech-item {
             display: flex;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 20px;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 2rem;
-            cursor: pointer;
-        }
-
-        .gallery-grid {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
         }
 
-        .gallery-item {
-            aspect-ratio: 1;
-            border-radius: 10px;
+        .tech-item img {
+            width: 24px;
+            height: 24px;
+            opacity: 0.7;
+        }
+
+        /* Apps Section */
+        .section {
+            padding: 100px 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-label {
+            display: inline-block;
+            padding: 6px 14px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .section-desc {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* App Cards Grid */
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .app-card {
+            background: var(--bg-card);
+            border-radius: 24px;
             overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.3s;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
 
-        .gallery-item:hover {
-            transform: scale(1.05);
+        .app-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        .gallery-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Game Mode */
-        .game-container {
+        .app-card::before {
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            z-index: 60;
-        }
-
-        .game-container.active {
-            display: block;
-        }
-
-        .game-score {
-            position: absolute;
-            top: 70px;
-            right: 20px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(10px);
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-
-        .game-object {
-            position: absolute;
-            font-size: 2.5rem;
-            transition: transform 0.1s;
-            pointer-events: none;
-        }
-
-        /* Sound Visualizer */
-        .sound-visualizer {
-            position: absolute;
-            bottom: 180px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 3px;
+            right: 0;
+            height: 4px;
+            background: var(--card-gradient);
             opacity: 0;
             transition: opacity 0.3s;
         }
 
-        .sound-visualizer.active {
+        .app-card:hover::before {
             opacity: 1;
         }
 
-        .sound-bar {
-            width: 4px;
-            background: linear-gradient(to top, #ff6b6b, #feca57);
-            border-radius: 2px;
-            transition: height 0.05s;
-        }
-
-        /* Toast Notifications */
-        .toast {
-            position: fixed;
-            bottom: 200px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px);
-            padding: 15px 25px;
-            border-radius: 25px;
-            color: #fff;
-            font-size: 0.9rem;
-            z-index: 400;
-            opacity: 0;
-            transition: all 0.3s;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        /* Settings Panel */
-        .settings-panel {
-            position: fixed;
-            top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100%;
-            background: rgba(20,20,40,0.95);
-            backdrop-filter: blur(20px);
-            z-index: 350;
-            transition: right 0.3s;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .settings-panel.show {
-            right: 0;
-        }
-
-        .settings-group {
-            margin: 20px 0;
-        }
-
-        .settings-group h3 {
-            font-size: 0.85rem;
-            color: rgba(255,255,255,0.5);
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-
-        .settings-item {
+        .app-card-preview {
+            height: 220px;
+            background: var(--card-gradient);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .toggle {
-            width: 50px;
-            height: 26px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 13px;
+            justify-content: center;
             position: relative;
-            cursor: pointer;
-            transition: background 0.3s;
+            overflow: hidden;
         }
 
-        .toggle.active {
-            background: #ff6b6b;
-        }
-
-        .toggle::after {
+        .app-card-preview::after {
             content: '';
             position: absolute;
-            width: 22px;
-            height: 22px;
-            background: #fff;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: left 0.3s;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 50%, var(--bg-card) 100%);
         }
 
-        .toggle.active::after {
-            left: 26px;
+        .app-card-icon {
+            font-size: 5rem;
+            z-index: 1;
+            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.3));
+            animation: iconFloat 3s ease-in-out infinite;
         }
 
-        .slider-container {
-            width: 100%;
-            margin-top: 10px;
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
-        .slider {
-            width: 100%;
-            -webkit-appearance: none;
-            height: 4px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 2px;
-            outline: none;
+        .app-card-content {
+            padding: 2rem;
         }
 
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            background: #ff6b6b;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        /* Preview Image */
-        .preview-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 400;
-            display: none;
-            flex-direction: column;
+        .app-card-badge {
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
         }
 
-        .preview-modal.show {
+        .app-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .app-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+        }
+
+        .app-card-features {
             display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 1.5rem;
         }
 
-        .preview-modal img {
-            max-width: 90%;
-            max-height: 70%;
-            border-radius: 10px;
+        .feature-tag {
+            padding: 6px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--primary);
         }
 
-        .preview-actions {
+        .app-card-link {
             display: flex;
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .preview-btn {
-            padding: 12px 30px;
-            border-radius: 25px;
-            border: none;
-            font-size: 1rem;
-            cursor: pointer;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 600;
             transition: all 0.3s;
         }
 
-        .preview-btn.save {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
-            color: #fff;
+        .app-card-link:hover {
+            background: rgba(255,255,255,0.08);
         }
 
-        .preview-btn.share {
-            background: linear-gradient(135deg, #48dbfb, #0abde3);
-            color: #fff;
-        }
-
-        .preview-btn.close {
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-        }
-
-        /* Error Screen */
-        .error-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            display: none;
-            flex-direction: column;
+        .app-card-link .arrow {
+            width: 32px;
+            height: 32px;
+            background: var(--card-gradient);
+            border-radius: 8px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            padding: 40px;
-            z-index: 250;
+            transition: transform 0.3s;
         }
 
-        .error-screen.show {
-            display: flex;
+        .app-card-link:hover .arrow {
+            transform: translateX(5px);
         }
 
-        .error-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
+        /* Face App Card */
+        .app-card.face { --card-gradient: var(--gradient-2); }
+        /* Hands App Card */
+        .app-card.hands { --card-gradient: var(--gradient-3); }
+        /* Body App Card */
+        .app-card.body { --card-gradient: var(--gradient-4); }
+        /* Holistic App Card */
+        .app-card.holistic { --card-gradient: var(--gradient-5); }
+
+        /* Features Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
         }
 
-        .error-title {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-        }
-
-        .error-message {
-            color: rgba(255,255,255,0.6);
-            margin-bottom: 30px;
-        }
-
-        .retry-btn {
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
-            border: none;
-            border-radius: 25px;
-            color: #fff;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-
-        /* Voice Effect Indicator */
-        .voice-effect-indicator {
-            position: absolute;
-            top: 70px;
-            right: 20px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(10px);
-            padding: 8px 15px;
+        .feature-card {
+            padding: 2rem;
+            background: var(--bg-card);
             border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            background: var(--bg-card-hover);
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--gradient-1);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .feature-card h4 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 80px 2rem;
+            background: rgba(99, 102, 241, 0.05);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .stats-grid {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 60px 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--text);
+        }
+
+        .footer-copyright {
+            color: var(--text-muted);
             font-size: 0.85rem;
+        }
+
+        .footer-copyright a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
             display: none;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .voice-effect-indicator.show {
-            display: flex;
-        }
-
-        .voice-wave {
-            display: flex;
-            gap: 2px;
-            align-items: center;
-        }
-
-        .voice-wave span {
-            width: 3px;
-            height: 10px;
-            background: #ff6b6b;
-            border-radius: 1px;
-            animation: wave 0.5s ease-in-out infinite;
-        }
-
-        .voice-wave span:nth-child(2) { animation-delay: 0.1s; }
-        .voice-wave span:nth-child(3) { animation-delay: 0.2s; }
-        .voice-wave span:nth-child(4) { animation-delay: 0.3s; }
-
-        @keyframes wave {
-            0%, 100% { height: 5px; }
-            50% { height: 15px; }
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
         }
 
         /* Responsive */
-        @media (min-width: 768px) {
-            .app-container {
-                border-left: 1px solid rgba(255,255,255,0.1);
-                border-right: 1px solid rgba(255,255,255,0.1);
+        @media (max-width: 768px) {
+            .nav-links, .nav-cta {
+                display: none;
             }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .apps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stat-item h3 {
+                font-size: 2rem;
+            }
+
+            .tech-stack {
+                gap: 1.5rem;
+            }
+        }
+
+        /* Scroll animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s, transform 0.6s;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Loading Screen -->
-        <div class="loading-screen" id="loadingScreen">
-            <div class="loading-spinner"></div>
-            <div class="loading-text" id="loadingText">AI 모델 로딩 중...</div>
-            <div class="loading-progress">
-                <div class="loading-progress-bar" id="loadingProgress"></div>
-            </div>
-        </div>
-
-        <!-- Error Screen -->
-        <div class="error-screen" id="errorScreen">
-            <div class="error-icon">📷</div>
-            <div class="error-title">카메라 접근 필요</div>
-            <div class="error-message" id="errorMessage">카메라 권한을 허용해주세요</div>
-            <button class="retry-btn" onclick="location.reload()">다시 시도</button>
-        </div>
-
-        <!-- Header -->
-        <div class="header">
-            <h1>🎭 FacePlay</h1>
-            <div class="header-icons">
-                <button class="icon-btn" id="flipCamera">🔄</button>
-                <button class="icon-btn" id="settingsBtn">⚙️</button>
-            </div>
-        </div>
-
-        <!-- Mode Tabs -->
-        <div class="mode-tabs">
-            <button class="mode-tab active" data-mode="camera">카메라</button>
-            <button class="mode-tab" data-mode="game">게임</button>
-            <button class="mode-tab" data-mode="voice">음성효과</button>
-        </div>
-
-        <!-- Camera Container -->
-        <div class="camera-container">
-            <video id="video" autoplay playsinline></video>
-            <canvas id="canvas"></canvas>
-            <canvas id="overlay-canvas"></canvas>
-
-            <!-- Face Info -->
-            <div class="face-info" id="faceInfo" style="display: none;">
-                <div class="face-info-item">
-                    <span>👤</span>
-                    <span id="faceCount">얼굴: 0개</span>
-                </div>
-                <div class="face-info-item">
-                    <span>😊</span>
-                    <span id="expression">표정: -</span>
-                </div>
-                <div class="face-info-item">
-                    <span>📐</span>
-                    <span id="headPose">자세: 정면</span>
-                </div>
-            </div>
-
-            <!-- Voice Effect Indicator -->
-            <div class="voice-effect-indicator" id="voiceIndicator">
-                <div class="voice-wave">
-                    <span></span><span></span><span></span><span></span>
-                </div>
-                <span id="currentVoiceEffect">음성 효과</span>
-            </div>
-
-            <!-- Game Container -->
-            <div class="game-container" id="gameContainer">
-                <div class="game-score">점수: <span id="gameScore">0</span></div>
-            </div>
-
-            <!-- Sound Visualizer -->
-            <div class="sound-visualizer" id="soundVisualizer"></div>
-
-            <!-- Filter Bar -->
-            <div class="filter-bar" id="filterBar">
-                <div class="filter-item active" data-filter="none">
-                    <span class="emoji">🚫</span>
-                    <span class="name">없음</span>
-                </div>
-                <div class="filter-item" data-filter="dog">
-                    <span class="emoji">🐕</span>
-                    <span class="name">강아지</span>
-                </div>
-                <div class="filter-item" data-filter="cat">
-                    <span class="emoji">🐱</span>
-                    <span class="name">고양이</span>
-                </div>
-                <div class="filter-item" data-filter="rabbit">
-                    <span class="emoji">🐰</span>
-                    <span class="name">토끼</span>
-                </div>
-                <div class="filter-item" data-filter="crown">
-                    <span class="emoji">👑</span>
-                    <span class="name">왕관</span>
-                </div>
-                <div class="filter-item" data-filter="glasses">
-                    <span class="emoji">🕶️</span>
-                    <span class="name">선글라스</span>
-                </div>
-                <div class="filter-item" data-filter="heart">
-                    <span class="emoji">❤️</span>
-                    <span class="name">하트</span>
-                </div>
-                <div class="filter-item" data-filter="sparkle">
-                    <span class="emoji">✨</span>
-                    <span class="name">반짝이</span>
-                </div>
-                <div class="filter-item" data-filter="devil">
-                    <span class="emoji">😈</span>
-                    <span class="name">악마</span>
-                </div>
-                <div class="filter-item" data-filter="angel">
-                    <span class="emoji">😇</span>
-                    <span class="name">천사</span>
-                </div>
-                <div class="filter-item" data-filter="clown">
-                    <span class="emoji">🤡</span>
-                    <span class="name">광대</span>
-                </div>
-                <div class="filter-item" data-filter="alien">
-                    <span class="emoji">👽</span>
-                    <span class="name">외계인</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bottom Controls -->
-        <div class="bottom-controls">
-            <button class="control-btn" id="galleryBtn">🖼️</button>
-            <button class="capture-btn" id="captureBtn"></button>
-            <button class="control-btn" id="effectBtn">🎨</button>
-        </div>
+    <!-- Background Animation -->
+    <div class="bg-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
     </div>
 
-    <!-- Gallery Modal -->
-    <div class="modal" id="galleryModal">
-        <div class="modal-header">
-            <h2>갤러리</h2>
-            <button class="modal-close" id="closeGallery">×</button>
-        </div>
-        <div class="gallery-grid" id="galleryGrid">
-            <p style="grid-column: 1/-1; text-align: center; color: rgba(255,255,255,0.5); padding: 40px;">
-                아직 저장된 사진이 없습니다
+    <!-- Header -->
+    <header class="header" id="header">
+        <nav class="nav">
+            <a href="#" class="logo">
+                <div class="logo-icon">🔬</div>
+                <span class="logo-text">AI Vision Lab</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="#apps">앱</a></li>
+                <li><a href="#features">기능</a></li>
+                <li><a href="#tech">기술</a></li>
+                <li><a href="https://github.com/hwkim3330/face" target="_blank">GitHub</a></li>
+            </ul>
+
+            <a href="#apps" class="nav-cta">시작하기 →</a>
+
+            <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="pulse"></span>
+                100% 브라우저 기반 · 설치 불필요
+            </div>
+
+            <h1>
+                브라우저에서 실행되는<br>
+                <span class="highlight">AI 비전 앱</span> 컬렉션
+            </h1>
+
+            <p>
+                MediaPipe 기반의 실시간 얼굴, 손, 몸 인식 기술을 활용한
+                다양한 인터랙티브 앱을 경험해보세요.
             </p>
-        </div>
-    </div>
 
-    <!-- Preview Modal -->
-    <div class="preview-modal" id="previewModal">
-        <img id="previewImage" src="" alt="Preview">
-        <div class="preview-actions">
-            <button class="preview-btn save" id="saveBtn">💾 저장</button>
-            <button class="preview-btn share" id="shareBtn">📤 공유</button>
-            <button class="preview-btn close" id="closePreview">닫기</button>
-        </div>
-    </div>
+            <div class="hero-buttons">
+                <a href="#apps" class="btn btn-primary">
+                    🚀 앱 둘러보기
+                </a>
+                <a href="https://github.com/hwkim3330/face" target="_blank" class="btn btn-secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    GitHub
+                </a>
+            </div>
 
-    <!-- Settings Panel -->
-    <div class="settings-panel" id="settingsPanel">
-        <h2>설정</h2>
-        <div class="settings-group">
-            <h3>카메라</h3>
-            <div class="settings-item">
-                <span>얼굴 정보 표시</span>
-                <div class="toggle active" id="toggleFaceInfo"></div>
-            </div>
-            <div class="settings-item">
-                <span>고화질 모드</span>
-                <div class="toggle" id="toggleHD"></div>
-            </div>
-        </div>
-        <div class="settings-group">
-            <h3>음성</h3>
-            <div class="settings-item">
-                <span>음성 효과</span>
-                <div class="toggle" id="toggleVoice"></div>
-            </div>
-            <div class="slider-container">
-                <label>피치: <span id="pitchValue">1.0</span></label>
-                <input type="range" class="slider" id="pitchSlider" min="0.5" max="2" step="0.1" value="1">
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <span>🤖</span> MediaPipe
+                </div>
+                <div class="tech-item">
+                    <span>🎨</span> Canvas API
+                </div>
+                <div class="tech-item">
+                    <span>🔊</span> Web Audio
+                </div>
+                <div class="tech-item">
+                    <span>📱</span> PWA Ready
+                </div>
             </div>
         </div>
-        <div class="settings-group">
-            <h3>게임</h3>
-            <div class="settings-item">
-                <span>효과음</span>
-                <div class="toggle active" id="toggleSound"></div>
+    </section>
+
+    <!-- Apps Section -->
+    <section class="section" id="apps">
+        <div class="section-header fade-in">
+            <span class="section-label">Applications</span>
+            <h2 class="section-title">AI 비전 앱 컬렉션</h2>
+            <p class="section-desc">각 앱을 클릭하여 바로 체험해보세요. 모든 처리는 브라우저에서 로컬로 수행됩니다.</p>
+        </div>
+
+        <div class="apps-grid">
+            <!-- Face App -->
+            <div class="app-card face fade-in">
+                <div class="app-card-preview">
+                    <span class="app-card-icon">🎭</span>
+                </div>
+                <div class="app-card-content">
+                    <div class="app-card-badge">
+                        <span>👤</span> 468 Landmarks
+                    </div>
+                    <h3>FacePlay</h3>
+                    <p>스노우 스타일의 얼굴 인식 AR 필터 앱. 20가지 필터와 5가지 미니게임, 음성 효과까지!</p>
+                    <div class="app-card-features">
+                        <span class="feature-tag">AR 필터 20종</span>
+                        <span class="feature-tag">미니게임</span>
+                        <span class="feature-tag">음성 효과</span>
+                    </div>
+                    <a href="apps/face/" class="app-card-link">
+                        <span>앱 실행하기</span>
+                        <span class="arrow">→</span>
+                    </a>
+                </div>
             </div>
-            <div class="slider-container">
-                <label>난이도: <span id="difficultyValue">보통</span></label>
-                <input type="range" class="slider" id="difficultySlider" min="1" max="3" step="1" value="2">
+
+            <!-- Hands App -->
+            <div class="app-card hands fade-in">
+                <div class="app-card-preview">
+                    <span class="app-card-icon">✋</span>
+                </div>
+                <div class="app-card-content">
+                    <div class="app-card-badge">
+                        <span>🖐️</span> 21 Landmarks
+                    </div>
+                    <h3>HandsPlay</h3>
+                    <p>손 인식 기반 인터랙티브 앱. 가상 피아노, 손가락 그림, 가위바위보 게임을 즐겨보세요.</p>
+                    <div class="app-card-features">
+                        <span class="feature-tag">가상 피아노</span>
+                        <span class="feature-tag">에어 드로잉</span>
+                        <span class="feature-tag">제스처 게임</span>
+                    </div>
+                    <a href="apps/hands/" class="app-card-link">
+                        <span>앱 실행하기</span>
+                        <span class="arrow">→</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Body App -->
+            <div class="app-card body fade-in">
+                <div class="app-card-preview">
+                    <span class="app-card-icon">🏃</span>
+                </div>
+                <div class="app-card-content">
+                    <div class="app-card-badge">
+                        <span>🦴</span> 33 Landmarks
+                    </div>
+                    <h3>BodyPlay</h3>
+                    <p>전신 자세 인식 앱. 운동 자세 교정, 댄스 게임, 요가 가이드까지 다양한 기능을 제공합니다.</p>
+                    <div class="app-card-features">
+                        <span class="feature-tag">자세 분석</span>
+                        <span class="feature-tag">운동 트래커</span>
+                        <span class="feature-tag">댄스 게임</span>
+                    </div>
+                    <a href="apps/body/" class="app-card-link">
+                        <span>앱 실행하기</span>
+                        <span class="arrow">→</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Holistic App -->
+            <div class="app-card holistic fade-in">
+                <div class="app-card-preview">
+                    <span class="app-card-icon">🌟</span>
+                </div>
+                <div class="app-card-content">
+                    <div class="app-card-badge">
+                        <span>✨</span> Full Body + Hands + Face
+                    </div>
+                    <h3>HolisticPlay</h3>
+                    <p>얼굴, 손, 몸을 모두 인식하는 통합 앱. 완벽한 AR 아바타와 인터랙티브 경험을 제공합니다.</p>
+                    <div class="app-card-features">
+                        <span class="feature-tag">AR 아바타</span>
+                        <span class="feature-tag">모션 캡처</span>
+                        <span class="feature-tag">VTuber 모드</span>
+                    </div>
+                    <a href="apps/holistic/" class="app-card-link">
+                        <span>앱 실행하기</span>
+                        <span class="arrow">→</span>
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Toast -->
-    <div class="toast" id="toast"></div>
+    <!-- Features Section -->
+    <section class="section" id="features">
+        <div class="section-header fade-in">
+            <span class="section-label">Features</span>
+            <h2 class="section-title">핵심 기능</h2>
+            <p class="section-desc">최신 웹 기술로 구현된 강력한 기능들</p>
+        </div>
 
-    <!-- MediaPipe & TensorFlow.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3/drawing_utils.js"></script>
+        <div class="features-grid">
+            <div class="feature-card fade-in">
+                <div class="feature-icon">⚡</div>
+                <h4>실시간 처리</h4>
+                <p>GPU 가속을 활용한 30+ FPS의 부드러운 실시간 처리를 제공합니다.</p>
+            </div>
 
-    <script src="filters.js"></script>
-    <script src="games.js"></script>
-    <script src="app.js"></script>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🔒</div>
+                <h4>완전한 프라이버시</h4>
+                <p>모든 처리가 브라우저에서 로컬로 수행되어 데이터가 서버로 전송되지 않습니다.</p>
+            </div>
 
-    <!-- Service Worker Registration -->
+            <div class="feature-card fade-in">
+                <div class="feature-icon">📱</div>
+                <h4>모바일 최적화</h4>
+                <p>PWA 지원으로 앱처럼 설치하고, 모바일에서도 완벽하게 동작합니다.</p>
+            </div>
+
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🎮</div>
+                <h4>인터랙티브 게임</h4>
+                <p>얼굴, 손, 몸 동작을 활용한 다양한 미니게임을 즐길 수 있습니다.</p>
+            </div>
+
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🎨</div>
+                <h4>AR 필터 & 효과</h4>
+                <p>스노우 스타일의 다양한 AR 필터와 실시간 효과를 적용할 수 있습니다.</p>
+            </div>
+
+            <div class="feature-card fade-in">
+                <div class="feature-icon">📤</div>
+                <h4>공유 & 저장</h4>
+                <p>캡처한 사진과 영상을 저장하고 소셜 미디어에 공유할 수 있습니다.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section" id="tech">
+        <div class="stats-grid">
+            <div class="stat-item fade-in">
+                <h3>4</h3>
+                <p>AI 비전 앱</p>
+            </div>
+            <div class="stat-item fade-in">
+                <h3>522+</h3>
+                <p>추적 포인트</p>
+            </div>
+            <div class="stat-item fade-in">
+                <h3>30+</h3>
+                <p>AR 필터</p>
+            </div>
+            <div class="stat-item fade-in">
+                <h3>15+</h3>
+                <p>미니게임</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="https://github.com/hwkim3330/face" target="_blank">GitHub</a>
+            <a href="https://mediapipe.dev" target="_blank">MediaPipe</a>
+            <a href="#apps">앱 목록</a>
+        </div>
+        <p class="footer-copyright">
+            Made with 💜 using <a href="https://mediapipe.dev" target="_blank">MediaPipe</a> ·
+            <a href="https://github.com/hwkim3330" target="_blank">@hwkim3330</a>
+        </p>
+    </footer>
+
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('SW registered:', reg.scope))
-                    .catch(err => console.log('SW registration failed:', err));
-            });
-        }
-
-        // PWA Install Prompt
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-
-            // Show install button after a delay
-            setTimeout(() => {
-                if (deferredPrompt) {
-                    const toast = document.getElementById('toast');
-                    toast.innerHTML = '📲 앱으로 설치하기 <button onclick="installPWA()" style="margin-left:10px;padding:5px 10px;border:none;background:#ff6b6b;color:#fff;border-radius:10px;cursor:pointer;">설치</button>';
-                    toast.classList.add('show');
-                    setTimeout(() => toast.classList.remove('show'), 5000);
-                }
-            }, 3000);
+        // Header scroll effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
         });
 
-        function installPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((result) => {
-                    if (result.outcome === 'accepted') {
-                        console.log('PWA installed');
-                    }
-                    deferredPrompt = null;
-                });
-            }
-        }
+        // Fade in on scroll
+        const fadeElements = document.querySelectorAll('.fade-in');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        fadeElements.forEach(el => observer.observe(el));
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
     </script>
 </body>
 </html>

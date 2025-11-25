@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HolisticPlay - 통합 AI 비전 앱</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌟</text></svg>">
+    <meta name="theme-color" content="#fa709a">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a0a20 0%, #2a1a3a 50%, #1a0a25 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            background: linear-gradient(45deg, #fa709a, #fee140);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .camera-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1);
+        }
+
+        #avatarCanvas {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 400px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 0 0 0 20px;
+            z-index: 60;
+        }
+
+        .loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a0a20 0%, #2a1a3a 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            transition: opacity 0.5s;
+        }
+
+        .loading-screen.hidden { opacity: 0; pointer-events: none; }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #fa709a;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text { margin-top: 20px; color: rgba(255,255,255,0.8); }
+
+        .mode-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .mode-tab {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 10px 18px;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .mode-tab.active {
+            color: #fff;
+            background: linear-gradient(135deg, #fa709a, #fee140);
+        }
+
+        /* Info Panel */
+        .info-panel {
+            position: absolute;
+            top: 60px;
+            left: 15px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 15px;
+            z-index: 50;
+            max-width: 200px;
+        }
+
+        .info-section {
+            margin-bottom: 15px;
+        }
+
+        .info-section:last-child { margin-bottom: 0; }
+
+        .info-section h4 {
+            font-size: 0.75rem;
+            color: #fa709a;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .info-item {
+            font-size: 0.85rem;
+            margin: 4px 0;
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* Avatar Panel */
+        .avatar-panel {
+            position: absolute;
+            top: 60px;
+            right: 15px;
+            width: 280px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            overflow: hidden;
+            z-index: 60;
+        }
+
+        .avatar-header {
+            padding: 12px 15px;
+            background: linear-gradient(135deg, #fa709a, #fee140);
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .avatar-body {
+            padding: 15px;
+        }
+
+        #avatarPreview {
+            width: 100%;
+            height: 250px;
+            background: #1a0a20;
+            border-radius: 15px;
+            margin-bottom: 10px;
+        }
+
+        .avatar-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .avatar-btn {
+            flex: 1;
+            min-width: 70px;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .avatar-btn.active {
+            background: linear-gradient(135deg, #fa709a, #fee140);
+        }
+
+        /* Motion Trail */
+        .motion-trail {
+            position: absolute;
+            pointer-events: none;
+            z-index: 55;
+        }
+
+        /* VTuber Mode */
+        .vtuber-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 70;
+        }
+
+        .vtuber-container.active { display: block; }
+
+        #vtuberCanvas {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* Recording Indicator */
+        .recording-indicator {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: rgba(255, 0, 0, 0.8);
+            border-radius: 25px;
+            z-index: 100;
+        }
+
+        .recording-indicator.active { display: flex; }
+
+        .recording-dot {
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .bottom-bar {
+            padding: 15px;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .action-btn {
+            padding: 12px 25px;
+            border-radius: 25px;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #fa709a, #fee140);
+            color: #fff;
+        }
+
+        .action-btn.secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .action-btn.danger {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(50px);
+            background: rgba(0,0,0,0.8);
+            padding: 12px 24px;
+            border-radius: 25px;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 500;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 600px) {
+            .avatar-panel { width: 220px; }
+            #avatarPreview { height: 180px; }
+            .info-panel { max-width: 160px; padding: 12px 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="loading-screen" id="loadingScreen">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">통합 AI 모델 로딩 중...</div>
+        </div>
+
+        <div class="header">
+            <div class="header-left">
+                <a href="../../" class="back-btn">←</a>
+                <h1>🌟 HolisticPlay</h1>
+            </div>
+        </div>
+
+        <div class="mode-tabs">
+            <button class="mode-tab active" data-mode="tracking">트래킹</button>
+            <button class="mode-tab" data-mode="avatar">아바타</button>
+            <button class="mode-tab" data-mode="vtuber">VTuber</button>
+            <button class="mode-tab" data-mode="motion">모션캡처</button>
+        </div>
+
+        <div class="camera-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+
+            <!-- Info Panel -->
+            <div class="info-panel" id="infoPanel">
+                <div class="info-section">
+                    <h4>👤 얼굴</h4>
+                    <div class="info-item" id="faceStatus">감지됨</div>
+                    <div class="info-item" id="faceExpression">표정: 보통</div>
+                </div>
+                <div class="info-section">
+                    <h4>🖐️ 손</h4>
+                    <div class="info-item" id="handsStatus">왼손: ✓ 오른손: ✓</div>
+                    <div class="info-item" id="gesture">제스처: -</div>
+                </div>
+                <div class="info-section">
+                    <h4>🦴 몸</h4>
+                    <div class="info-item" id="bodyStatus">감지됨</div>
+                    <div class="info-item" id="bodyPose">자세: 서있음</div>
+                </div>
+            </div>
+
+            <!-- Avatar Panel -->
+            <div class="avatar-panel" id="avatarPanel" style="display:none">
+                <div class="avatar-header">🎭 AR 아바타</div>
+                <div class="avatar-body">
+                    <canvas id="avatarPreview"></canvas>
+                    <div class="avatar-controls">
+                        <button class="avatar-btn active" data-avatar="robot">🤖</button>
+                        <button class="avatar-btn" data-avatar="cat">🐱</button>
+                        <button class="avatar-btn" data-avatar="bear">🐻</button>
+                        <button class="avatar-btn" data-avatar="alien">👽</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VTuber Container -->
+            <div class="vtuber-container" id="vtuberContainer">
+                <canvas id="vtuberCanvas"></canvas>
+            </div>
+
+            <!-- Recording Indicator -->
+            <div class="recording-indicator" id="recordingIndicator">
+                <span class="recording-dot"></span>
+                <span>녹화중 <span id="recordingTime">00:00</span></span>
+            </div>
+        </div>
+
+        <div class="bottom-bar">
+            <button class="action-btn primary" id="captureBtn">
+                <span>📸</span> 캡처
+            </button>
+            <button class="action-btn secondary" id="recordBtn">
+                <span>🎬</span> 녹화
+            </button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- MediaPipe Holistic -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5/holistic.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3/drawing_utils.js"></script>
+
+    <script>
+        class HolisticPlayApp {
+            constructor() {
+                this.video = document.getElementById('video');
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.avatarCanvas = document.getElementById('avatarPreview');
+                this.avatarCtx = this.avatarCanvas.getContext('2d');
+                this.vtuberCanvas = document.getElementById('vtuberCanvas');
+                this.vtuberCtx = this.vtuberCanvas.getContext('2d');
+
+                this.holistic = null;
+                this.currentMode = 'tracking';
+                this.currentAvatar = 'robot';
+
+                // Motion capture data
+                this.motionData = [];
+                this.isRecording = false;
+                this.recordingStartTime = null;
+
+                // MediaRecorder
+                this.mediaRecorder = null;
+                this.recordedChunks = [];
+
+                this.init();
+            }
+
+            async init() {
+                try {
+                    await this.initHolistic();
+                    await this.initCamera();
+                    this.initUI();
+                    document.getElementById('loadingScreen').classList.add('hidden');
+                } catch (error) {
+                    console.error('Init error:', error);
+                    alert('초기화 실패: ' + error.message);
+                }
+            }
+
+            async initHolistic() {
+                this.holistic = new Holistic({
+                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5/${file}`
+                });
+
+                this.holistic.setOptions({
+                    modelComplexity: 1,
+                    smoothLandmarks: true,
+                    enableSegmentation: false,
+                    refineFaceLandmarks: true,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
+
+                this.holistic.onResults((results) => this.onResults(results));
+            }
+
+            async initCamera() {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: 1280, height: 720 }
+                });
+                this.video.srcObject = stream;
+
+                return new Promise((resolve) => {
+                    this.video.onloadedmetadata = () => {
+                        this.video.play();
+                        this.canvas.width = this.video.videoWidth;
+                        this.canvas.height = this.video.videoHeight;
+                        this.vtuberCanvas.width = this.video.videoWidth;
+                        this.vtuberCanvas.height = this.video.videoHeight;
+                        this.avatarCanvas.width = 250;
+                        this.avatarCanvas.height = 230;
+                        this.startProcessing();
+                        resolve();
+                    };
+                });
+            }
+
+            startProcessing() {
+                const process = async () => {
+                    if (this.video.readyState >= 2) {
+                        await this.holistic.send({ image: this.video });
+                    }
+                    requestAnimationFrame(process);
+                };
+                process();
+            }
+
+            onResults(results) {
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+
+                this.ctx.clearRect(0, 0, w, h);
+
+                // Update info panel
+                this.updateInfoPanel(results);
+
+                // Draw based on mode
+                switch (this.currentMode) {
+                    case 'tracking':
+                        this.drawTracking(results);
+                        break;
+                    case 'avatar':
+                        this.drawTracking(results);
+                        this.drawAvatar(results);
+                        break;
+                    case 'vtuber':
+                        this.drawVTuber(results);
+                        break;
+                    case 'motion':
+                        this.drawTracking(results);
+                        if (this.isRecording) {
+                            this.recordMotion(results);
+                        }
+                        break;
+                }
+            }
+
+            drawTracking(results) {
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+
+                // Draw pose
+                if (results.poseLandmarks) {
+                    this.drawConnectors(results.poseLandmarks, [
+                        [11, 13], [13, 15], [12, 14], [14, 16],
+                        [11, 12], [11, 23], [12, 24], [23, 24],
+                        [23, 25], [25, 27], [24, 26], [26, 28]
+                    ], '#fa709a', 4);
+
+                    this.drawLandmarks(results.poseLandmarks, '#fee140', 6);
+                }
+
+                // Draw face mesh
+                if (results.faceLandmarks) {
+                    this.ctx.strokeStyle = 'rgba(250, 112, 154, 0.3)';
+                    this.ctx.lineWidth = 1;
+
+                    // Simple face outline
+                    const faceIndices = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10];
+
+                    this.ctx.beginPath();
+                    faceIndices.forEach((idx, i) => {
+                        const p = results.faceLandmarks[idx];
+                        if (i === 0) this.ctx.moveTo(p.x * w, p.y * h);
+                        else this.ctx.lineTo(p.x * w, p.y * h);
+                    });
+                    this.ctx.closePath();
+                    this.ctx.stroke();
+                }
+
+                // Draw hands
+                if (results.leftHandLandmarks) {
+                    this.drawHandSkeleton(results.leftHandLandmarks, '#4facfe');
+                }
+                if (results.rightHandLandmarks) {
+                    this.drawHandSkeleton(results.rightHandLandmarks, '#43e97b');
+                }
+            }
+
+            drawConnectors(landmarks, connections, color, lineWidth) {
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = lineWidth;
+
+                connections.forEach(([start, end]) => {
+                    const p1 = landmarks[start];
+                    const p2 = landmarks[end];
+                    if (p1 && p2) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(p1.x * w, p1.y * h);
+                        this.ctx.lineTo(p2.x * w, p2.y * h);
+                        this.ctx.stroke();
+                    }
+                });
+            }
+
+            drawLandmarks(landmarks, color, size) {
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+
+                this.ctx.fillStyle = color;
+                landmarks.forEach(lm => {
+                    if (lm.visibility === undefined || lm.visibility > 0.5) {
+                        this.ctx.beginPath();
+                        this.ctx.arc(lm.x * w, lm.y * h, size, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                });
+            }
+
+            drawHandSkeleton(landmarks, color) {
+                const connections = [
+                    [0,1],[1,2],[2,3],[3,4],
+                    [0,5],[5,6],[6,7],[7,8],
+                    [0,9],[9,10],[10,11],[11,12],
+                    [0,13],[13,14],[14,15],[15,16],
+                    [0,17],[17,18],[18,19],[19,20],
+                    [5,9],[9,13],[13,17]
+                ];
+
+                this.drawConnectors(landmarks, connections, color, 2);
+                this.drawLandmarks(landmarks, color, 4);
+            }
+
+            updateInfoPanel(results) {
+                // Face status
+                const faceStatus = results.faceLandmarks ? '✓ 감지됨' : '✗ 미감지';
+                document.getElementById('faceStatus').textContent = faceStatus;
+
+                // Expression (simple detection based on mouth)
+                if (results.faceLandmarks) {
+                    const upperLip = results.faceLandmarks[13];
+                    const lowerLip = results.faceLandmarks[14];
+                    const mouthOpen = Math.abs(upperLip.y - lowerLip.y) > 0.03;
+                    document.getElementById('faceExpression').textContent = `표정: ${mouthOpen ? '😮 놀람' : '😊 보통'}`;
+                }
+
+                // Hands status
+                const leftHand = results.leftHandLandmarks ? '✓' : '✗';
+                const rightHand = results.rightHandLandmarks ? '✓' : '✗';
+                document.getElementById('handsStatus').textContent = `왼손: ${leftHand} 오른손: ${rightHand}`;
+
+                // Gesture detection
+                let gesture = '-';
+                if (results.rightHandLandmarks) {
+                    gesture = this.detectGesture(results.rightHandLandmarks);
+                } else if (results.leftHandLandmarks) {
+                    gesture = this.detectGesture(results.leftHandLandmarks);
+                }
+                document.getElementById('gesture').textContent = `제스처: ${gesture}`;
+
+                // Body status
+                const bodyStatus = results.poseLandmarks ? '✓ 감지됨' : '✗ 미감지';
+                document.getElementById('bodyStatus').textContent = bodyStatus;
+
+                // Body pose
+                if (results.poseLandmarks) {
+                    const leftHip = results.poseLandmarks[23];
+                    const leftKnee = results.poseLandmarks[25];
+                    const sitting = leftHip.y < leftKnee.y - 0.1;
+                    document.getElementById('bodyPose').textContent = `자세: ${sitting ? '앉음' : '서있음'}`;
+                }
+            }
+
+            detectGesture(landmarks) {
+                const thumbUp = landmarks[4].y < landmarks[3].y;
+                const indexUp = landmarks[8].y < landmarks[6].y;
+                const middleUp = landmarks[12].y < landmarks[10].y;
+                const ringUp = landmarks[16].y < landmarks[14].y;
+                const pinkyUp = landmarks[20].y < landmarks[18].y;
+
+                if (thumbUp && !indexUp && !middleUp && !ringUp && !pinkyUp) return '👍';
+                if (!thumbUp && indexUp && middleUp && !ringUp && !pinkyUp) return '✌️';
+                if (thumbUp && indexUp && middleUp && ringUp && pinkyUp) return '🖐️';
+                if (!thumbUp && indexUp && !middleUp && !ringUp && !pinkyUp) return '☝️';
+                if (!thumbUp && !indexUp && !middleUp && !ringUp && !pinkyUp) return '✊';
+                if (thumbUp && indexUp && !middleUp && !ringUp && pinkyUp) return '🤟';
+
+                return '-';
+            }
+
+            drawAvatar(results) {
+                this.avatarCtx.fillStyle = '#1a0a20';
+                this.avatarCtx.fillRect(0, 0, 250, 230);
+
+                if (!results.faceLandmarks || !results.poseLandmarks) {
+                    this.avatarCtx.fillStyle = '#fff';
+                    this.avatarCtx.font = '14px sans-serif';
+                    this.avatarCtx.textAlign = 'center';
+                    this.avatarCtx.fillText('얼굴과 몸을 보여주세요', 125, 115);
+                    return;
+                }
+
+                const face = results.faceLandmarks;
+                const centerX = 125;
+                const centerY = 100;
+
+                // Calculate head rotation
+                const leftEye = face[33];
+                const rightEye = face[263];
+                const rotation = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+
+                // Draw avatar based on type
+                this.avatarCtx.save();
+                this.avatarCtx.translate(centerX, centerY);
+                this.avatarCtx.rotate(rotation);
+
+                switch (this.currentAvatar) {
+                    case 'robot':
+                        this.drawRobotAvatar(face);
+                        break;
+                    case 'cat':
+                        this.drawCatAvatar(face);
+                        break;
+                    case 'bear':
+                        this.drawBearAvatar(face);
+                        break;
+                    case 'alien':
+                        this.drawAlienAvatar(face);
+                        break;
+                }
+
+                this.avatarCtx.restore();
+            }
+
+            drawRobotAvatar(face) {
+                const ctx = this.avatarCtx;
+
+                // Head
+                ctx.fillStyle = '#666';
+                ctx.fillRect(-50, -60, 100, 80);
+
+                // Eyes
+                const leftEyeOpen = Math.abs(face[159].y - face[145].y) > 0.01;
+                const rightEyeOpen = Math.abs(face[386].y - face[374].y) > 0.01;
+
+                ctx.fillStyle = leftEyeOpen ? '#00ff00' : '#003300';
+                ctx.fillRect(-35, -40, 25, 15);
+
+                ctx.fillStyle = rightEyeOpen ? '#00ff00' : '#003300';
+                ctx.fillRect(10, -40, 25, 15);
+
+                // Mouth
+                const mouthOpen = Math.abs(face[13].y - face[14].y) * 300;
+                ctx.fillStyle = '#333';
+                ctx.fillRect(-30, 0, 60, 5 + mouthOpen);
+
+                // Antenna
+                ctx.strokeStyle = '#888';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, -60);
+                ctx.lineTo(0, -80);
+                ctx.stroke();
+
+                ctx.fillStyle = '#ff0000';
+                ctx.beginPath();
+                ctx.arc(0, -80, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            drawCatAvatar(face) {
+                const ctx = this.avatarCtx;
+
+                // Face
+                ctx.fillStyle = '#ffa07a';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 50, 45, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Ears
+                ctx.beginPath();
+                ctx.moveTo(-40, -30);
+                ctx.lineTo(-30, -60);
+                ctx.lineTo(-15, -35);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(40, -30);
+                ctx.lineTo(30, -60);
+                ctx.lineTo(15, -35);
+                ctx.fill();
+
+                // Eyes
+                const eyeScale = 1 + Math.abs(face[159].y - face[145].y) * 10;
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.ellipse(-20, -5, 8, 12 * eyeScale, 0, 0, Math.PI * 2);
+                ctx.ellipse(20, -5, 8, 12 * eyeScale, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Nose
+                ctx.fillStyle = '#ff69b4';
+                ctx.beginPath();
+                ctx.moveTo(0, 5);
+                ctx.lineTo(-8, 15);
+                ctx.lineTo(8, 15);
+                ctx.fill();
+
+                // Whiskers
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1;
+                [-1, 1].forEach(side => {
+                    for (let i = 0; i < 3; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(side * 15, 15 + i * 5);
+                        ctx.lineTo(side * 50, 10 + i * 8);
+                        ctx.stroke();
+                    }
+                });
+            }
+
+            drawBearAvatar(face) {
+                const ctx = this.avatarCtx;
+
+                // Ears
+                ctx.fillStyle = '#8b4513';
+                ctx.beginPath();
+                ctx.arc(-40, -45, 20, 0, Math.PI * 2);
+                ctx.arc(40, -45, 20, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Inner ears
+                ctx.fillStyle = '#deb887';
+                ctx.beginPath();
+                ctx.arc(-40, -45, 10, 0, Math.PI * 2);
+                ctx.arc(40, -45, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Face
+                ctx.fillStyle = '#8b4513';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 55, 50, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Snout
+                ctx.fillStyle = '#deb887';
+                ctx.beginPath();
+                ctx.ellipse(0, 15, 25, 20, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eyes
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(-20, -10, 8, 0, Math.PI * 2);
+                ctx.arc(20, -10, 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Nose
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.ellipse(0, 10, 10, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Mouth
+                const mouthOpen = Math.abs(face[13].y - face[14].y) * 200;
+                if (mouthOpen > 5) {
+                    ctx.fillStyle = '#800000';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 25, 15, mouthOpen / 2, 0, 0, Math.PI);
+                    ctx.fill();
+                }
+            }
+
+            drawAlienAvatar(face) {
+                const ctx = this.avatarCtx;
+
+                // Head
+                ctx.fillStyle = '#90EE90';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 45, 60, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Big eyes
+                const eyeScale = 0.8 + Math.abs(face[159].y - face[145].y) * 5;
+
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.ellipse(-20, -10, 18, 25 * eyeScale, -0.2, 0, Math.PI * 2);
+                ctx.ellipse(20, -10, 18, 25 * eyeScale, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eye shine
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(-25, -20, 5, 0, Math.PI * 2);
+                ctx.arc(15, -20, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Small mouth
+                ctx.strokeStyle = '#006400';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 30, 10, 0.2, Math.PI - 0.2);
+                ctx.stroke();
+
+                // Antennae
+                ctx.strokeStyle = '#90EE90';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(-15, -55);
+                ctx.quadraticCurveTo(-25, -80, -20, -90);
+                ctx.moveTo(15, -55);
+                ctx.quadraticCurveTo(25, -80, 20, -90);
+                ctx.stroke();
+
+                ctx.fillStyle = '#90EE90';
+                ctx.beginPath();
+                ctx.arc(-20, -90, 6, 0, Math.PI * 2);
+                ctx.arc(20, -90, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            drawVTuber(results) {
+                const ctx = this.vtuberCtx;
+                const w = this.vtuberCanvas.width;
+                const h = this.vtuberCanvas.height;
+
+                // Background
+                const gradient = ctx.createLinearGradient(0, 0, w, h);
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, w, h);
+
+                if (!results.faceLandmarks) {
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '24px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('얼굴을 카메라에 보여주세요', w / 2, h / 2);
+                    return;
+                }
+
+                const face = results.faceLandmarks;
+                const centerX = w / 2;
+                const centerY = h / 2 - 50;
+                const scale = 2.5;
+
+                // Draw anime-style character
+                ctx.save();
+                ctx.translate(centerX, centerY);
+
+                // Hair (back)
+                ctx.fillStyle = '#5c3d6e';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 150, 180, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Face
+                ctx.fillStyle = '#ffe4c4';
+                ctx.beginPath();
+                ctx.ellipse(0, 20, 100, 120, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eyes - follow face landmarks
+                const leftEyeX = (face[33].x - 0.5) * 100;
+                const rightEyeX = (face[263].x - 0.5) * 100;
+                const eyeY = (face[33].y - 0.5) * 50;
+
+                // Eye whites
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.ellipse(-35 + leftEyeX * 0.3, -20 + eyeY, 30, 35, 0, 0, Math.PI * 2);
+                ctx.ellipse(35 + rightEyeX * 0.3, -20 + eyeY, 30, 35, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Pupils
+                const pupilOffset = (face[468]?.x - 0.5) * 20 || 0;
+                ctx.fillStyle = '#764ba2';
+                ctx.beginPath();
+                ctx.ellipse(-35 + pupilOffset, -20 + eyeY, 15, 20, 0, 0, Math.PI * 2);
+                ctx.ellipse(35 + pupilOffset, -20 + eyeY, 15, 20, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(-35 + pupilOffset, -20 + eyeY, 8, 0, Math.PI * 2);
+                ctx.arc(35 + pupilOffset, -20 + eyeY, 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eye shine
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(-40 + pupilOffset, -28 + eyeY, 5, 0, Math.PI * 2);
+                ctx.arc(30 + pupilOffset, -28 + eyeY, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Blush
+                ctx.fillStyle = 'rgba(255, 150, 150, 0.5)';
+                ctx.beginPath();
+                ctx.ellipse(-60, 30, 20, 10, 0, 0, Math.PI * 2);
+                ctx.ellipse(60, 30, 20, 10, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Mouth
+                const mouthOpen = Math.abs(face[13].y - face[14].y) * 500;
+                ctx.fillStyle = '#cc6666';
+                ctx.beginPath();
+                if (mouthOpen > 10) {
+                    ctx.ellipse(0, 60, 20, Math.min(mouthOpen, 30), 0, 0, Math.PI * 2);
+                } else {
+                    ctx.arc(0, 55, 15, 0.2, Math.PI - 0.2);
+                }
+                ctx.fill();
+
+                // Hair (front)
+                ctx.fillStyle = '#7b5d8e';
+                ctx.beginPath();
+                ctx.moveTo(-100, -100);
+                ctx.quadraticCurveTo(-50, -150, 0, -120);
+                ctx.quadraticCurveTo(50, -150, 100, -100);
+                ctx.lineTo(80, -50);
+                ctx.quadraticCurveTo(40, -80, 0, -60);
+                ctx.quadraticCurveTo(-40, -80, -80, -50);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            recordMotion(results) {
+                this.motionData.push({
+                    timestamp: Date.now() - this.recordingStartTime,
+                    pose: results.poseLandmarks,
+                    face: results.faceLandmarks,
+                    leftHand: results.leftHandLandmarks,
+                    rightHand: results.rightHandLandmarks
+                });
+
+                // Update recording time
+                const elapsed = Math.floor((Date.now() - this.recordingStartTime) / 1000);
+                const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const secs = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('recordingTime').textContent = `${mins}:${secs}`;
+            }
+
+            initUI() {
+                // Mode tabs
+                document.querySelectorAll('.mode-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        this.currentMode = tab.dataset.mode;
+
+                        document.getElementById('avatarPanel').style.display = this.currentMode === 'avatar' ? 'block' : 'none';
+                        document.getElementById('vtuberContainer').classList.toggle('active', this.currentMode === 'vtuber');
+                        document.getElementById('infoPanel').style.display = this.currentMode === 'vtuber' ? 'none' : 'block';
+                    });
+                });
+
+                // Avatar buttons
+                document.querySelectorAll('.avatar-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.currentAvatar = btn.dataset.avatar;
+                    });
+                });
+
+                // Capture
+                document.getElementById('captureBtn').addEventListener('click', () => this.capture());
+
+                // Record
+                document.getElementById('recordBtn').addEventListener('click', () => {
+                    if (this.isRecording) {
+                        this.stopRecording();
+                    } else {
+                        this.startRecording();
+                    }
+                });
+            }
+
+            startRecording() {
+                this.isRecording = true;
+                this.recordingStartTime = Date.now();
+                this.motionData = [];
+
+                document.getElementById('recordingIndicator').classList.add('active');
+                document.getElementById('recordBtn').innerHTML = '<span>⏹️</span> 정지';
+                document.getElementById('recordBtn').classList.remove('secondary');
+                document.getElementById('recordBtn').classList.add('danger');
+
+                this.showToast('🎬 녹화 시작!');
+            }
+
+            stopRecording() {
+                this.isRecording = false;
+                document.getElementById('recordingIndicator').classList.remove('active');
+                document.getElementById('recordBtn').innerHTML = '<span>🎬</span> 녹화';
+                document.getElementById('recordBtn').classList.remove('danger');
+                document.getElementById('recordBtn').classList.add('secondary');
+
+                // Download motion data
+                if (this.motionData.length > 0) {
+                    const dataStr = JSON.stringify(this.motionData, null, 2);
+                    const blob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `motion_capture_${Date.now()}.json`;
+                    link.href = url;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                }
+
+                this.showToast(`📁 모션 데이터 저장됨 (${this.motionData.length} 프레임)`);
+            }
+
+            capture() {
+                const sourceCanvas = this.currentMode === 'vtuber' ? this.vtuberCanvas : this.canvas;
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = sourceCanvas.width;
+                tempCanvas.height = sourceCanvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+
+                if (this.currentMode !== 'vtuber') {
+                    tempCtx.save();
+                    tempCtx.scale(-1, 1);
+                    tempCtx.drawImage(this.video, -tempCanvas.width, 0);
+                    tempCtx.restore();
+
+                    tempCtx.save();
+                    tempCtx.scale(-1, 1);
+                    tempCtx.drawImage(sourceCanvas, -tempCanvas.width, 0);
+                    tempCtx.restore();
+                } else {
+                    tempCtx.drawImage(sourceCanvas, 0, 0);
+                }
+
+                const link = document.createElement('a');
+                link.download = `holisticplay_${Date.now()}.png`;
+                link.href = tempCanvas.toDataURL();
+                link.click();
+
+                this.showToast('📸 저장됨!');
+            }
+
+            showToast(msg) {
+                const toast = document.getElementById('toast');
+                toast.textContent = msg;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => new HolisticPlayApp());
+    </script>
+</body>
+</html>
